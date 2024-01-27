@@ -163,8 +163,9 @@ def reformat(path:str, collection_name:str,
 
     new_dict = {}
     new_dict['specifications'] = {'filter':filter_num,
-                                    'units':{'pressures':pressure_units,
-                                            'times':time_units}}
+                                  'units':{'pressures':pressure_units,
+                                           'times':time_units},
+                                  'stations':station_names}
 
     data_dict = {}
     for idx in range(len(station_names)):
@@ -175,7 +176,9 @@ def reformat(path:str, collection_name:str,
         reformatted_dict = {'pressures':p_arr, 'times':time_arr}
 
         data_dict[station_names[idx]] = reformatted_dict
-        new_dict['data'] = data_dict
+    
+    #Brought out of loop - To be tested
+    new_dict['data'] = data_dict
 
     return new_dict
 

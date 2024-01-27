@@ -25,7 +25,7 @@ masterplot( FIX ME! )
     
 """
 
-def interferometric_response():
+def interferometric_response(data_collection, plot_title:str=None):
     """
     Parameters
     ----------
@@ -33,7 +33,22 @@ def interferometric_response():
     Returns
     -------
     """
-    return -1
+    fig, ax = plt.subplots(6, sharex=True, sharey=False, figsize=(10, 9))
+
+    time_unit = data_collection['specifications']['units']['times']
+    fig.supxlabel('Time (%s)' % time_unit)   
+
+    fig.supylabel('Excess Wavelengths (deg)')
+
+    plot_title = 'Interferometric Reponse' if plot_title == None else plot_title 
+    fig.suptitle(plot_title)
+
+    count = 0
+    for stations in data_collection['excess_path_length'].keys():
+        ax[count].plot(data_collection['times'], data_collection['excess_path_length'][stations]*360.0)
+        
+        ax[count].set_title(stations)
+        count+=1
 
 def allan_variance():
     """
@@ -69,17 +84,14 @@ def time_series(data_dict, plot_title:str='Pressure Response'):
     plt.figure(figsize=(15, 10))
     plt.rc('xtick', labelsize=20) 
     plt.rc('ytick', labelsize=20) 
-    
-    stations = []
+
     for key in data_dict['data'].keys():
         p_arr = data_dict['data'][key]['pressures']
         time_arr = data_dict['data'][key]['times']
 
-        stations.append(key)
-
         plt.plot(time_arr, (np.array(p_arr) - np.mean(p_arr)))
 
-    plt.legend(stations,
+    plt.legend(data_dict['specifications']['stations'],
         bbox_to_anchor=(1.125, 1.0),
         loc='upper right', fontsize=20)
 
