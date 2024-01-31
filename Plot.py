@@ -50,7 +50,7 @@ def interferometric_response(data_collection, plot_title:str=None):
         ax[count].set_title(stations)
         count+=1
 
-def allan_variance():
+def allan_variance(data_collection:dict, title:str='Allan Variance'):
     """
     Parameters
     ----------
@@ -58,7 +58,38 @@ def allan_variance():
     Returns
     -------
     """
-    return -1
+    fig,ax = plt.subplots(3, 2, figsize=(12, 17), sharey=True, sharex=True)
+    fig.suptitle(title, fontsize=30)
+    fig.supxlabel('Time (%s)' % data_collection['specifications']['units']['times'], fontsize=25)
+    fig.supylabel('Phase', fontsize=25)
+
+    count = 0
+    for i in range(0,3):
+        for j in range(0,2):
+            bandwidths = list(data_collection['allan_var'].keys())
+            delta_time = data_collection['specifications']['units']['delta_time']
+            allan_var = data_collection['allan_var'][bandwidths[count]]
+
+            ax[i][j].scatter(delta_time * np.arange(len(allan_var)), allan_var, label='Allan Variance', color='red')        
+            ax[i][j].set_xscale('log')
+            ax[i][j].set_yscale('log')
+            ax[i][j].set_title(bandwidths[count], fontsize=15)
+            # plot guidelines
+            time_axis = delta_time * np.arange(len(allan_var))
+            ax[i][j].plot(time_axis, time_axis**-2.0, label='delta_time**-2.0')
+            ax[i][j].plot(time_axis, time_axis**-1.0, label='delta_time**-1.0')
+            ax[i][j].plot(time_axis, time_axis**-0.5, label='delta_time**-0.5')
+
+            ax[i][j].legend(loc='upper right', fontsize=12)
+            count+=1
+
+    # set the spacing between subplots
+    plt.subplots_adjust(left=0.1,
+                        bottom=0.06, 
+                        right=0.9, 
+                        top=0.93, 
+                        wspace=0.1, 
+                        hspace=0.1)
 
 def correlation():
     """

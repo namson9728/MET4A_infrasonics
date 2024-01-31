@@ -45,15 +45,17 @@ def excess_path_length(data_collection, L_norm:float=2000, p_norm:float=1,
             key = str(stations[i] + '-' + stations[j])
             excess_arr[key] = np.array((p_arr1 - p_arr2) * (L_norm / p_norm))
 
-        delta_data = {}
-        delta_data['specifications'] = (data_collection['specifications'])
-        delta_data['specifications']['units'] = {'L_norm':L_norm_units, 'p_norm':p_norm_units}
-        delta_data['excess_path_length'] = excess_arr
-        delta_data['times'] = data_collection['data'][stations[0]]['times']
+        excess_lengths = {}
+        excess_lengths['specifications'] = (data_collection['specifications'])
+        excess_lengths['specifications']['units'] = {'L_norm':L_norm_units,
+                                               'p_norm':p_norm_units,
+                                               'times':data_collection['specifications']['units']['times']}
+        excess_lengths['excess_path_length'] = excess_arr
+        excess_lengths['times'] = data_collection['data'][stations[0]]['times']
 
-    return delta_data
+    return excess_lengths
 
-def allan_variance():
+def allan_variance(data_collection:dict, allan_var_units:str='Phase'):
     """
     Parameters
     ----------
@@ -61,7 +63,27 @@ def allan_variance():
     Returns
     -------
     """
-    return -1
+    t_arr = data_collection['times']
+    t_arr = np.mean(np.diff(t_arr))
+
+    bandwidths = {}
+    for key, value in data_collection['excess_path_length'].items():
+        allan_var = np.zeros(len(value))
+        print("Starting data collection for " + key)
+
+        for idx in range(1, len(value)//2):
+            allan_var[idx] = np.mean((value[:-2*idx] - 2*value[idx:-idx] + value[idx*2:])**2.0) / (2.0 * (idx * t_arr) **2)
+
+        bandwidths[key] = allan_var
+    
+    allan_var_dict = {}
+    allan_var_dict['specifications'] = (data_collection['specifications'])
+    allan_var_dict['specifications']['units'] = {'allan_var':allan_var_units,
+                                                 'times':data_collection['specifications']['units']['times']}
+    allan_var_dict['times'] = data_collection['times']
+    allan_var_dict['allan_var'] = bandwidths
+
+    return allan_var_dict
 
 def correlation():
     """
