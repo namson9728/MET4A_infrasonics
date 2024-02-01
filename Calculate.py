@@ -46,7 +46,7 @@ def excess_path_length(data_collection, L_norm:float=2000, p_norm:float=1,
             excess_arr[key] = np.array((p_arr1 - p_arr2) * (L_norm / p_norm))
 
         excess_lengths = {}
-        excess_lengths['specifications'] = (data_collection['specifications'])
+        excess_lengths['specifications'] = (data_collection['specifications']).copy()
         excess_lengths['specifications']['units'] = {'L_norm':L_norm_units,
                                                'p_norm':p_norm_units,
                                                'times':data_collection['specifications']['units']['times']}
@@ -77,7 +77,7 @@ def allan_variance(data_collection:dict, allan_var_units:str='Phase'):
         bandwidths[key] = allan_var
     
     allan_var_dict = {}
-    allan_var_dict['specifications'] = (data_collection['specifications'])
+    allan_var_dict['specifications'] = (data_collection['specifications']).copy()
     allan_var_dict['specifications']['units'] = {'allan_var':allan_var_units,
                                                  'times':data_collection['specifications']['units']['times']}
     allan_var_dict['times'] = data_collection['times']
@@ -85,12 +85,105 @@ def allan_variance(data_collection:dict, allan_var_units:str='Phase'):
 
     return allan_var_dict
 
-def correlation():
-    """
-    Parameters
-    ----------
+def cross_correlate(data_collection:dict, frequency_units:str='Hz'):
+    stations = data_collection['specifications']['stations']
+    correlate_dict = {}
+    pair_frequencies = {}
+    pair_norm_cross_smooth = {}
+    pair_cross_smooth = {}
 
-    Returns
-    -------
-    """
-    return -1
+    for i in range(len(stations)):
+        for j in range(i+1, len(stations)):
+
+            station1 = data_collection['data'][stations[i]]['pressures']
+            station2 = data_collection['data'][stations[j]]['pressures']
+            station1 = (station1 - np.mean(station1))
+            station2 = (station2 - np.mean(station2))
+            
+            cross_12 = (np.fft.fft(station1) * np.conj(np.fft.fft(station2)))
+            cross_12 = cross_12[:int(len(station1)/2)]
+            norm_cross_12 = cross_12/abs(cross_12)
+            
+            num_bins = int(np.ceil(np.log2(len(cross_12))))
+            cross_12_smooth = np.zeros(num_bins, dtype=cross_12.dtype)
+            norm_cross_12_smooth = np.zeros(num_bins, dtype=norm_cross_12.dtype)
+            values = np.zeros(num_bins)
+            for idx in range(num_bins):
+                cross_12_smooth[idx] = np.mean(cross_12[2**(idx):2**(idx+1)])
+                norm_cross_12_smooth[idx] = np.mean(norm_cross_12[2**(idx):2**(idx+1)])
+                values[idx] = ((2**idx) + (2**(idx+1)))/2
+
+            samplingFrequency = data_collection['specifications']['sampling_frequency']
+            timePeriod  = len(cross_12)/samplingFrequency
+            frequencies = values/timePeriod
+        
+            key = str(stations[i] + '-' + stations[j])
+            
+            pair_frequencies[key] = frequencies
+            pair_cross_smooth[key] = norm_cross_12_smooth
+            pair_norm_cross_smooth[key] = norm_cross_12_smooth
+
+    correlate_dict['specifications'] = (data_collection['specifications']).copy()
+    correlate_dict['specifications']['units'] = {'pressures':data_collection['specifications']['units']['pressures'],
+                                                 'times':data_collection['specifications']['units']['times'],
+                                                 'frequency':frequency_units}
+    correlate_dict['frequencies'] = pair_frequencies
+    correlate_dict['correlation_norm'] = pair_norm_cross_smooth
+    correlate_dict['correlation'] = pair_cross_smooth
+    
+    return correlate_dict
+
+def auto_correlate(data_collection:dict, frequency_units:str='Hz'):
+    stations = data_collection['specifications']['stations']
+    correlate_dict = {}
+    pair_frequencies = {}
+    pair_norm_cross_smooth = {}
+    pair_cross_smooth = {}
+
+    for i in range(len(stations)):
+        station1 = data_collection['data'][stations[i]]['pressures']
+        station1 = (station1 - np.mean(station1))
+        
+        cross_12 = (np.fft.fft(station1) * np.conj(np.fft.fft(station1)))
+        cross_12 = cross_12[:int(len(station1)/2)]
+        norm_cross_12 = cross_12/abs(cross_12)
+        
+        num_bins = int(np.ceil(np.log2(len(cross_12))))
+        cross_12_smooth = np.zeros(num_bins, dtype=cross_12.dtype)
+        norm_cross_12_smooth = np.zeros(num_bins, dtype=norm_cross_12.dtype)
+        values = np.zeros(num_bins)
+        for idx in range(num_bins):
+            cross_12_smooth[idx] = np.mean(cross_12[2**(idx):2**(idx+1)])
+            norm_cross_12_smooth[idx] = np.mean(norm_cross_12[2**(idx):2**(idx+1)])
+            values[idx] = ((2**idx) + (2**(idx+1)))/2
+
+        samplingFrequency = data_collection['specifications']['sampling_frequency']
+        timePeriod  = len(cross_12)/samplingFrequency
+        frequencies = values/timePeriod
+    
+        key = str(stations[i] + '-' + stations[i])
+        
+        pair_frequencies[key] = frequencies
+        pair_cross_smooth[key] = norm_cross_12_smooth
+        pair_norm_cross_smooth[key] = norm_cross_12_smooth
+
+    correlate_dict['specifications'] = (data_collection['specifications']).copy()
+    correlate_dict['specifications']['units'] = {'pressures':data_collection['specifications']['units']['pressures'],
+                                                 'times':data_collection['specifications']['units']['times'],
+                                                 'frequency':frequency_units}
+    correlate_dict['frequencies'] = pair_frequencies
+    correlate_dict['correlation_norm'] = pair_norm_cross_smooth
+    correlate_dict['correlation'] = pair_cross_smooth
+    
+    return correlate_dict
+
+def correlate(data_collection:dict):
+    cross = cross_correlate(data_collection)
+    auto = auto_correlate(data_collection)
+
+    correlate = {}
+    correlate['specifications'] = (cross['specifications']).copy()
+    correlate['cross'] = cross
+    correlate['auto'] = auto
+
+    return correlate

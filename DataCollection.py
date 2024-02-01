@@ -132,7 +132,8 @@ def get_filter_old(data_dict:dict):
 
 def reformat(path:str, collection_name:str,
              station_names:list=['dol', 'ott', 'sea', 'orc'],
-             pressure_units:str='bar', time_units:str='sec'):
+             pressure_units:str='bar', time_units:str='sec',
+             sampling_frequency:int=625):
     """Reformats collections before 2024 into new standard collection format
     
     Parameters
@@ -165,7 +166,8 @@ def reformat(path:str, collection_name:str,
     new_dict['specifications'] = {'filter':filter_num,
                                   'units':{'pressures':pressure_units,
                                            'times':time_units},
-                                  'stations':station_names}
+                                  'stations':station_names,
+                                  'sampling_frequency':sampling_frequency}
 
     data_dict = {}
     for idx in range(len(station_names)):
