@@ -1,37 +1,42 @@
-import numpy as np
-import matplotlib.pyplot as plt
-
 """
+Plot
+----
 A class that contains all the methods to generate specific plots given the dataset
-
-...
 
 Methods
 -------
-interferometric_response( FIX ME! )
-    Generates a 'interferometric response vs. time' plot for all bandwidths
+interferometric_response(data_collection:dict, plot_title:str=None)
+    Generates a ``Interferometric Response vs. Time`` plot for all station pairs
 
-allan_variance( FIX ME! )
-    Generates a 'phase vs. time' plot of the Allan variance for all bandwidths
+allan_variance(data_collection:dict, plot_title:str=None)
+    Generates a ``Phase vs. Time`` plot of the Allan variance for all station pairs
 
-correlation( FIX ME! )
-    Generates a 'amplitude vs. frequency' plot of each cross correlation
+correlation(data_collection:dict, amplitude_units:str='dB', plot_title:str=None)
+    Generates a ``Amplitude vs. Frequency`` plot of each cross correlation
 
-time_series( FIX ME! )
-    Generates a 'pressure vs. time' plot of the dataset(s)
+time_series(data_collection, plot_title:str=None)
+    Generates a ``Pressure vs. Time`` plot of the dataset(s)
 
 masterplot( FIX ME! )
     Generates a comprehensive plot of the timeseries, correlation, Allan variance, and interferometric response
     
 """
 
-def interferometric_response(data_collection, plot_title:str=None):
-    """
+import numpy as np
+import matplotlib.pyplot as plt
+
+def interferometric_response(data_collection:dict, plot_title:str=None):
+    """Plots the excess path length simulating the inferometric response where ``lambda_obs = 1``
+
     Parameters
     ----------
+    data_collection: dict
+        Collection with excess path length data
 
-    Returns
-    -------
+    plot_title : str
+        The desired name for the plot
+        (default ``Interferometric Reponse``)
+
     """
     fig, ax = plt.subplots(6, sharex=True, sharey=False, figsize=(10, 12))
 
@@ -57,16 +62,22 @@ def interferometric_response(data_collection, plot_title:str=None):
                         wspace=0.1, 
                         hspace=0.2)
 
-def allan_variance(data_collection:dict, title:str='Allan Variance'):
-    """
+def allan_variance(data_collection:dict, plot_title:str=None):
+    """Plots the Allan variance data
+
     Parameters
     ----------
+    data_collection : dict
+        Collection with Allan variance data
 
-    Returns
-    -------
+    plot_title : str
+        The desired name for the plot
+        (default ``Allan Variance``)
+
     """
     fig,ax = plt.subplots(3, 2, figsize=(12, 17), sharey=True, sharex=True)
-    fig.suptitle(title, fontsize=30)
+    plot_title = 'Allan Variance' if plot_title == None else plot_title 
+    fig.suptitle(plot_title, fontsize=30)
     fig.supxlabel('Time (%s)' % data_collection['specifications']['units']['times'], fontsize=25)
     fig.supylabel('Phase', fontsize=25)
 
@@ -98,13 +109,22 @@ def allan_variance(data_collection:dict, title:str='Allan Variance'):
                         wspace=0.1, 
                         hspace=0.1)
 
-def correlation(data_collection:dict, amplitude_units:str='dB', title:str='CORRELATION'):
-    """
+def correlation(data_collection:dict, amplitude_units:str='dB', plot_title:str=None):
+    """Plots both the auto-correlation and cross-correlation of the data
+
     Parameters
     ----------
+    data_collection : dict
+        Collection with correlation data (both auto-correlation and cross-correlation)
 
-    Returns
-    -------
+    amplitude_units : str
+        Units of amplitude
+        (default ``dB``)
+
+    plot_title : str
+        The desired title for the plot
+        (default ``CORRELATION``)
+        
     """
     fig, ax = plt.subplots(3, 1, sharex=True, sharey=False, figsize=(15, 15))
     plt.subplots_adjust(left=0.1,
@@ -113,7 +133,8 @@ def correlation(data_collection:dict, amplitude_units:str='dB', title:str='CORRE
                         top=0.93, 
                         wspace=0.1, 
                         hspace=0.1)
-    fig.suptitle(title, fontsize=30)
+    plot_title = 'CORRELATION' if plot_title == None else plot_title
+    fig.suptitle(plot_title, fontsize=30)
     fig.supxlabel('Frequency (%s)' % data_collection['specifications']['units']['frequency'], fontsize = 25)
     fig.supylabel('Amplitude (%s)' % amplitude_units, fontsize=25)
     plt.xscale('log')
@@ -141,36 +162,37 @@ def correlation(data_collection:dict, amplitude_units:str='dB', title:str='CORRE
         ax[0].plot(auto_frequencies, 10*np.log10(np.abs(auto)))
         ax[0].set_title('Auto-Correlation Power Spectrum', fontsize=20)
 
-def time_series(data_dict, plot_title:str='Pressure Response'):
+def time_series(data_collection, plot_title:str=None):
     """Generates a time series plot of the data collection
 
     Parameters
     ----------
-    data_dict : dict
-        A properly formatted dictionary containing both 'specifications' and 'data' of the collection
+    data_collection : dict
+        A properly formatted dictionary containing both ``specifications`` and ``data`` of the collection
     plot_title : str
         The title for the time series plot
-        (default: 'Pressure Response')
+        (default ``Pressure Response``)
     """
     plt.figure(figsize=(15, 10))
 
-    for key in data_dict['data'].keys():
-        p_arr = data_dict['data'][key]['pressures']
-        time_arr = data_dict['data'][key]['times']
+    for key in data_collection['data'].keys():
+        p_arr = data_collection['data'][key]['pressures']
+        time_arr = data_collection['data'][key]['times']
 
         plt.plot(time_arr, (np.array(p_arr) - np.mean(p_arr)))
 
-    plt.legend(data_dict['specifications']['stations'],
+    plt.legend(data_collection['specifications']['stations'],
         bbox_to_anchor=(1.125, 1.0),
         loc='upper right', fontsize=20)
 
-    filter_num = str(data_dict['specifications']['filter'])
+    plot_title = 'Pressure Response' if plot_title == None else plot_title
+    filter_num = str(data_collection['specifications']['filter'])
     plt.title(plot_title + ' %s' % filter_num, fontsize=40)
 
-    time_unit = str(data_dict['specifications']['units']['times'])
+    time_unit = str(data_collection['specifications']['units']['times'])
     plt.xlabel('Time (%s)' % time_unit, fontsize=40)
 
-    pressure_unit = str(data_dict['specifications']['units']['pressures'])
+    pressure_unit = str(data_collection['specifications']['units']['pressures'])
     plt.ylabel('Pressure (%s)' % pressure_unit, fontsize=40)
 
 def master_plot():

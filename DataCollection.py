@@ -1,27 +1,80 @@
-import pickle
-
 """
+DataCollection
+--------------
 There are two main data collection formats: standard and non-standard
 
 As the name suggests, standard format is the standard way a data collection
 is store to simplify the data analysis process.
-
-    standard_format = {'specifications': {'filter_number':b'IA=%d'
-                                        'units': {'pressure_units:'bar',
-                                                    'time_units:'sec'
-                                                    }
-                                        },
-                    'data':{'pressures':[],
-                            'times':[]
-                            }
-                    }
-
+```
+standard_pressure_collection_format = {'specifications': {'filter_number':b'IA=%d',
+                                                          'units': {'pressures':str,
+                                                                    'times':str
+                                                                   }
+                                                          'stations':[],
+                                                          'sampling_frequency':[]
+                                                         },
+                                       'data':{'pressures':[],
+                                               'times':[]
+                                              }
+                                       }
+```
 Non-standard format refers to the original format by which data was stored
 when it was collected during Summer 2023.
 
 This class contains all the methods to convert from non-standard to standard
-formatas well as other methods to handle data collections in standard format
+format as well as other methods to handle data collections in standard format
 to make them compatible with other functions in the program.
+
+Data collections for ``Excess Path Length``, ``Allan Variance``, and ``Correlation`` follow variations of the standard format
+```
+standard_excess_path_length = {'specifications': {'filter_number':b'IA=%d',
+                                                  'units': {'pressures':str,
+                                                            'times':str,
+                                                            'L_norm':str='mm',
+                                                            'p_norm':str='bar'
+                                                           },
+                                                  'stations':[],
+                                                  'sampling_frequency':int,     
+                                                  },
+                               'excess_path_length':{'station_pair':[]},
+                               'times':{'station_pair':[]}    
+                              }
+```
+
+```
+standard_allan_variance = {'specifications': {'filter_number':b'IA=%d',
+                                              'units': {'allan_var':str='Phase',
+                                                        'times':str,
+                                                        'pressures':str
+                                                       },
+                                              'stations':[],
+                                              'sampling_frequency':int
+                                             },
+                           'times':{'station_pair':[]},
+                           'allan_var':{'station_pair':[]}
+                          }
+```
+
+```
+standard_correlation = {'specifications': {'filter_number':b'IA=%d',
+                                           'units': {'pressures':str,
+                                                     'times':str,
+                                                     'frequency':str='Hz'
+                                                    }
+                                           'stations':[],
+                                           'sampling_frequency':int
+                                          },
+                        'cross':{'frequencies':{'station_pairs':[]},
+                                 'correlation_norm':{'station_pairs':[]},
+                                 'correlation':{'station_pairs':[]}
+                                },
+                        'auto':{'frequencies':{'station_pairs':[]},
+                                'correction_norm':{'station_pairs':[]},
+                                'correlation':{'station_pairs':[]}
+                               }
+                       }
+```
+
 
 Methods
 -------
@@ -45,6 +98,8 @@ reformat(path:str, collection_name:str,
 save(data_dict:dict, file_path:str)
     Stores the data collection as a pickle file in the specified path
 """
+
+import pickle
 
 def load(collection_path:str):
     """Retrieves and loads a pickle file of the collection into a dictionary
