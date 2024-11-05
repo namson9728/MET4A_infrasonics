@@ -90,13 +90,18 @@ get_filter(data_dict:dict)
 get_filter_old(data_dict:dict)
     Returns the filter setting by which a data collection in non-standard format was taken
 
-reformat(path:str, collection_name:str,
-         station_names:list=['dol', 'ott', 'sea', 'orc'],
-         pressure_units:str='bar', time_units:str='sec')
-    Returns a reformatted data collection in standard format
+reformat_pressure_dict(path:str, collection_name:str,
+                       station_names:list=['dol', 'ott', 'sea', 'orc'],
+                       pressure_units:str='bar', time_units:str='sec')
+    Returns a pressure data collection in standard format
+
+reformat_allan_var_dict(path:str, collection_name:str,
+                        station_names:list=['dol', 'ott', 'sea', 'orc'])
+    Returns the Allan variance data collection in standard format
 
 save(data_dict:dict, file_path:str)
     Stores the data collection as a pickle file in the specified path
+
 """
 
 import pickle
@@ -113,6 +118,7 @@ def load(collection_path:str):
     -------
     data_dict : dict
         A dictionary containing the entire data collection
+
     """
     with open(collection_path, "rb") as f:
         return pickle.load(f)        
@@ -132,6 +138,7 @@ def load_old(path:str, collection_name:str):
     -------
     data_dict : dict
         A dictionary containing all the data collection
+
     """
     data_dict = {}
     sea_mammals = ['dolphin', 'otter', 'seal', 'orca']
@@ -159,6 +166,7 @@ def get_filter(data_dict:dict):
     -------
     filter_number : bytes
         The filter setting in bytes
+
     """
     filter_number = data_dict['specifications']['filter']
 
@@ -176,6 +184,7 @@ def get_filter_old(data_dict:dict):
     -------
     filter_number : bytes
         The filter setting in bytes
+
     """
     filter_number = str(data_dict[0].keys())
     filter_number = filter_number.split('=')
@@ -185,11 +194,11 @@ def get_filter_old(data_dict:dict):
 
     return filter_number
 
-def reformat(path:str, collection_name:str,
+def reformat_pressure_dict(path:str, collection_name:str,
              station_names:list=['dol', 'ott', 'sea', 'orc'],
              pressure_units:str='bar', time_units:str='sec',
              sampling_frequency:int=625):
-    """Reformats collections before 2024 into new standard collection format
+    """Reformats pressure data collections before 2024 into new standard collection format
     
     Parameters
     ----------
@@ -213,6 +222,7 @@ def reformat(path:str, collection_name:str,
     -------
     data_dict : dict
         The reformatted dictionary containing the entire collection
+
     """
     old_collection = load_old(path, collection_name)
     filter_num = get_filter_old(old_collection)
@@ -239,6 +249,11 @@ def reformat(path:str, collection_name:str,
 
     return new_dict
 
+def reformat_allan_var_dict(path:str, collection_name:str,
+                            station_names:list=['dol', 'ott', 'sea', 'orc']):
+    """Reformats old Allan_variance
+    """
+
 def save(data_dict:dict, file_path:str):
     """Stores the given dataset as a pickle file at the given path
 
@@ -249,6 +264,7 @@ def save(data_dict:dict, file_path:str):
     
     file_path : str
         The full path at which the pickle file will be saved including the name of the pickle file
+
     """
     with open(file_path, "wb") as f:
         pickle.dump(data_dict, f)

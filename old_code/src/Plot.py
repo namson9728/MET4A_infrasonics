@@ -162,13 +162,14 @@ def correlation(data_collection:dict, amplitude_units:str='dB', plot_title:str=N
         ax[0].plot(auto_frequencies, 10*np.log10(np.abs(auto)))
         ax[0].set_title('Auto-Correlation Power Spectrum', fontsize=20)
 
-def time_series(data_collection, plot_title:str=None):
+def time_series(data_collection:dict, plot_title:str=None):
     """Generates a time series plot of the data collection
 
     Parameters
     ----------
     data_collection : dict
         A properly formatted dictionary containing both ``specifications`` and ``data`` of the collection
+    
     plot_title : str
         The title for the time series plot
         (default ``Pressure Response``)
@@ -195,12 +196,16 @@ def time_series(data_collection, plot_title:str=None):
     pressure_unit = str(data_collection['specifications']['units']['pressures'])
     plt.ylabel('Pressure (%s)' % pressure_unit, fontsize=40)
 
-def master_plot():
+def full_plot(data_collection:dict, contains_allan_var:bool):
     """
     Parameters
     ----------
+    data_collection : dict
+        The full data collection containing the pressure, excess path length, Allan variance, and correlation data
+    
+    contains_allan_var : bool
+        The function will plot the ``Allan Variance`` if this variable is set to ``True``
+        (default ``False``)
 
-    Returns
-    -------
     """
     return -1

@@ -2,26 +2,10 @@
 
 This repository contains the refactored code from the original MET4A repository: https://github.com/kartographer/met4a.git
 
-Below is a list of all the basic classes and their functions.
-
 Requirements:
     - numpy
     - matplotlib
-    - scipy
     - pickle
-
-Specifications:
-    - path
-    - in-file name
-    - station array
-    - filter number
-    - out-file name
-    - sampling rate
-    - 
-
-
-
-
 
 Basic Data File =   { b'IA=#': {ott:{pressures:[#,#,...,#], times:[#,#,...,#]},
                                 orc:{pressures:[#,#,...,#], times:[#,#,...,#]},
@@ -58,7 +42,80 @@ Cross-correlation Data File =   { b'IA=#': {'ott-ott':[#,#,...,#],
 
     3. Each inner key is associated with the respective data measurements
 
+There are two main data collection formats: standard and non-standard
 
+As the name suggests, standard format is the standard way a data collection
+is store to simplify the data analysis process.
+```Python
+standard_pressure_collection_format = {'specifications': {'filter_number':b'IA=%d',
+                                                          'units': {'pressures':str,
+                                                                    'times':str
+                                                                   }
+                                                          'stations':[],
+                                                          'sampling_frequency':[]
+                                                         },
+                                       'data':{'pressures':[],
+                                               'times':[]
+                                              }
+                                       }
+```
+Non-standard format refers to the original format by which data was stored
+when it was collected during Summer 2023.
+
+This class contains all the methods to convert from non-standard to standard
+format as well as other methods to handle data collections in standard format
+to make them compatible with other functions in the program.
+
+Data collections for ``Excess Path Length``, ``Allan Variance``, and ``Correlation`` follow variations of the standard format
+
+```Python
+standard_excess_path_length = {'specifications': {'filter_number':b'IA=%d',
+                                                  'units': {'pressures':str,
+                                                            'times':str,
+                                                            'L_norm':str='mm',
+                                                            'p_norm':str='bar'
+                                                           },
+                                                  'stations':[],
+                                                  'sampling_frequency':int,     
+                                                  },
+                               'excess_path_length':{'station_pair':[]},
+                               'times':{'station_pair':[]}    
+                              }
+```
+
+```Python
+standard_allan_variance = {'specifications': {'filter_number':b'IA=%d',
+                                              'units': {'allan_var':str='Phase',
+                                                        'times':str,
+                                                        'pressures':str
+                                                       },
+                                              'stations':[],
+                                              'sampling_frequency':int
+                                             },
+                           'times':{'station_pair':[]},
+                           'allan_var':{'station_pair':[]}
+                          }
+```
+
+```Python
+standard_correlation = {'specifications': {'filter_number':b'IA=%d',
+                                           'units': {'pressures':str,
+                                                     'times':str,
+                                                     'frequency':str='Hz'
+                                                    }
+                                           'stations':[],
+                                           'sampling_frequency':int
+                                          },
+                        'cross':{'frequencies':{'station_pairs':[]},
+                                 'correlation_norm':{'station_pairs':[]},
+                                 'correlation':{'station_pairs':[]}
+                                },
+                        'auto':{'frequencies':{'station_pairs':[]},
+                                'correction_norm':{'station_pairs':[]},
+                                'correlation':{'station_pairs':[]}
+                               }
+                       }
+```
 
 
 Uses of MET4A Infrasonics:

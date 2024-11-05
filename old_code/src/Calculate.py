@@ -19,18 +19,44 @@ auto_correlate (data_collection:dict, frequency_units:str='Hz')
 
 correlate(data_collection:dict, frequency_units:str='Hz')
     Calculates both the cross and auto-correlation using ``cross_correlate()`` and ``auto_correlate()``
+
+full_data_processing(data_collection:dict, process_allan_var:bool)
+    Calculates the excess path length, Allan variance, and correlation all in one function
+
 """
 
 import numpy as np
 
-def excess_path_length(data_collection, L_norm:float=2000, p_norm:float=1,
+def excess_path_length(data_collection:dict, L_norm:float=2000, p_norm:float=1,
                        L_norm_units:str='mm', p_norm_units:str='bar'):
     """
     Parameters
     ----------
+    data_collection : dict
+        A data collection of the pressures
+
+    L_norm : float
+        **Hey Karto! Please define in nice astronomy terms ^-^
+        (default ``2000``)
+
+    p_norm : float
+        **Hey Karto! Please define in nice astronomy terms ^-^
+        (defaul ``1``)
+
+    L_norm_units : str
+        The unit of the L_norm variable
+        (default ``mm``)
+
+    p_norm_units : str
+        The unit of the p_norm variable
+        (default ``bar``)
+    
 
     Returns
     -------
+    excess_lengths : dict
+        A new data collection containing the excess path lengths derived from the pressure values
+
     """
     excess_dict = {}
     stations = data_collection['specifications']['stations']
@@ -58,9 +84,18 @@ def allan_variance(data_collection:dict, allan_var_units:str='Phase'):
     """Calculates the Allan variance of the excess path lengths
     Parameters
     ----------
+    data_collection : dict
+        A data_collection containing the excess path length data
+
+    allan_var_units : str
+        The units of the Allan variance values
+        (default ``Phase``)
 
     Returns
     -------
+    allan_var_dict : dict
+        A new data_collection containing the Allan variance values
+
     """
     t_arr = data_collection['times']
     t_arr = np.mean(np.diff(t_arr))
@@ -235,3 +270,23 @@ def correlate(data_collection:dict, frequency_units:str='Hz'):
     correlate['auto'] = auto
 
     return correlate
+
+def full_data_processing(data_collection:dict, process_allan_var:bool=False):
+    """Fully processes the pressure data collection calculating the excess path length, Allan variance, and correlation.
+
+    Parameters
+    ----------
+    data_collection : dict
+        A data collection of the pressure data in standard format
+
+    process_allan_var : bool
+        Setting this variable to ``False`` will cause the function to skip calculating the Allan variance
+        (default ``False``)
+        
+    Returns
+    -------
+    full_collection : dict
+        A new data collection containing the pressure, excess path length, Allan variance, and correlation data
+        (default Allan variance collection will be blank)
+
+    """
